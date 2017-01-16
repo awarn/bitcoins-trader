@@ -18,7 +18,6 @@ const lbc = new LBCClient(process.env.LOCALBITCOIN_KEY, process.env.LOCALBITCOIN
 
 // Timing
 let checkupSched = later.parse.text('every 5 seconds');
-let checkupTimer = later.setInterval(checkup, checkupSched);
 
 // Get the Localbitcoin user whose key and secret is used.
 async function getUser() {
@@ -80,7 +79,7 @@ async function getAds() {
 	let params = {
 		path: 'SEK'
 	};
-	return apiCall(method, {}, params);
+	return apiCall(method, null, params);
 }
 
 function checkup() {
@@ -88,9 +87,9 @@ function checkup() {
 
 		try {
 			let user = await getUser();
-			let userAds = await getUserAds();
-			let countrycodes = await getCountryCodes();
-			let currencies = await getCurrencies();
+			// let userAds = await getUserAds();
+			// let countrycodes = await getCountryCodes();
+			// let currencies = await getCurrencies();
 			let ads  = await getAds();
 
 			console.log(ads);
@@ -114,3 +113,8 @@ function checkup() {
 // 		console.log(ads[i].data.profile);
 // 	}
 // })
+
+checkup();
+
+// Run it all
+// let checkupTimer = later.setInterval(checkup, checkupSched);
