@@ -9,6 +9,7 @@ if (!process.env.LOCALBITCOIN_SECRET) {
 	process.exit(1);
 }
 
+const console = require("better-console");
 const later = require('later');
 const LBCClient = require('localbitcoins-api');
 const request = require('request-promise');
