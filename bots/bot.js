@@ -20,6 +20,12 @@ const lbc = new LBCClient(process.env.LOCALBITCOIN_KEY, process.env.LOCALBITCOIN
 // Timing
 let checkupSched = later.parse.text('every 5 seconds');
 
+let dontGoUnder = 8200;
+let undercutAmount = 10;
+let paymentMethod = `SWISH`;
+let minimumMaxAmountAvailable = 10000;
+let minTradeCount = 100;
+
 // Get the Localbitcoin user whose key and secret is used.
 async function getUser() {
 	let method = 'myself';
@@ -42,9 +48,18 @@ async function getCountryCodes() {
 	return apiCall(method);
 }
 
+// Get listed ads
+async function getAds() {
+	let method = 'buy-bitcoins-online';
+	let params = {
+		path: 'SEK'
+	};
+	return apiCall(method, null, params);
+}
+
 async function apiCall(method, ad_id, params) {
 	// Display user's info
-	return new Promise(resolve => {
+	return new Promise((resolve, reject) => {
 		lbc.api(method, ad_id, params, function(error, response) {
 			if(error) {
 				reject(error);
@@ -56,44 +71,69 @@ async function apiCall(method, ad_id, params) {
 	});
 }
 
-// Get listed ads
-async function getAds() {  
-	// const options = {
-	// 	method: 'GET',
-	// 	// headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-	// 	json: true,
-	// 	uri: `https://localbitcoins.com/buy-bitcoins-online/SE/sweden/.json`,
-	// 	// form: {
-	// 	//   'authentication.userId': `username`,
-	// 	//   'amount': cents.toString()
-	// 	// }
-	// };
-	// try {
-	// 	const response = await request(options);
-	// 	console.log(response);
-	// 	return Promise.resolve(response);
-	// }
-	// catch (error) {
-	// 	return Promise.reject(error);
-	// }
-	let method = 'buy-bitcoins-online';
-	let params = {
-		path: 'SEK'
-	};
-	return apiCall(method, null, params);
-}
-
 function checkup() {
 	(async () => {
 
 		try {
 			let user = await getUser();
-			// let userAds = await getUserAds();
-			// let countrycodes = await getCountryCodes();
-			// let currencies = await getCurrencies();
-			let ads  = await getAds();
 
-			console.log(ads);
+			// Get our own ad(s) id(s).
+			let userAds = await getUserAds();
+			let userAdList = userAds.ad_list;
+			let userAdIds = userAdList.map((ad) => {
+				return ad.data.ad_id;
+			});
+
+			// Get the current SEK ads.
+			let allAds = await getAds();
+			let adList = allAds.ad_list;
+
+			// Get our own ad(s).
+			let userSEKAdList = adList.filter((ad) => {
+				return userAdIds.includes(ad.data.ad_id);
+			});
+
+			// Filter out our own ad.
+			adList = adList.filter((ad) => {
+				return userAdIds.includes(ad.data.ad_id) == false;
+			});
+			// Filter out those not using our preferred payment method.
+			adList = adList.filter((ad) => {
+				return ad.data.online_provider == paymentMethod;
+			});
+			// Filter out ads not competing in trade bulk.
+			adList = adList.filter((ad) => {
+				return ad.data.max_amount_available > minimumMaxAmountAvailable;
+			});
+
+			// If we are in the top three, only compete with those
+			// with a significant number of trades.
+			let inTopThree = false;
+			for (let i = 0; i < adList.length; i++) {
+				if (i < 3) {
+					if (userAdIds.includes(adList[i].data.ad_id)) {
+						inTopThree = true;
+					}
+				}
+			}
+			if (inTopThree) {
+				adList = adList.filter((ad) => {
+					let trade_count = ad.data.profile.trade_count.replace(/\+$/, '');
+					return trade_count > minTradeCount;
+				});
+			}
+
+			console.log("user ads");
+			for (var i = adList.length - 1; i >= 0; i--) {
+				let data = adList[i].data
+				console.log(data.ad_id, data.profile.username);
+			}
+
+			console.log("user ads");
+			for (var i = userAdList.length - 1; i >= 0; i--) {
+				let data = userAdList[i].data
+				console.log(data.ad_id, data.profile.username);
+			}
 
 		} catch(e) {
 			console.log(e);
@@ -101,19 +141,6 @@ function checkup() {
 
 	})();
 }
-
-// getAds().then((response) => {
-// 	let ads = []
-// 	try {
-// 		ads = response.data.ad_list;
-// 	} catch (error) {
-// 		console.log(error);
-// 	}
-// 	for (var i = ads.length - 1; i >= 0; i--) {
-// 		console.log(ads[i].data);
-// 		console.log(ads[i].data.profile);
-// 	}
-// })
 
 checkup();
 
