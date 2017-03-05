@@ -9,7 +9,7 @@ if (!process.env.LOCALBITCOIN_SECRET) {
 	process.exit(1);
 }
 
-const LBCClient = require('../../localbitcoins-api');
+const LBCClient = require('localbitcoins-api');
 const passport = require('passport');
 const redis = require("redis");
 

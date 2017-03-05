@@ -11,7 +11,7 @@ if (!process.env.LOCALBITCOIN_SECRET) {
 
 const console = require("better-console");
 const later = require('later');
-const LBCClient = require('../../localbitcoins-api');
+const LBCClient = require('localbitcoins-api');
 const redis = require("redis");
 const request = require('request-promise');
 

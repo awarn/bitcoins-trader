@@ -2515,9 +2515,9 @@ lob@^3.9.0:
     bluebird "^3.0.6"
     request "^2.55.0"
 
-"localbitcoins-api@https://github.com/awarn/localbitcoins-api.git":
+"localbitcoins-api@https://github.com/awarn/localbitcoins-api":
   version "0.0.3"
-  resolved "https://github.com/awarn/localbitcoins-api.git#74152c58c690d32a97caacef90a203e2fc06c48c"
+  resolved "https://github.com/awarn/localbitcoins-api#801b3478c3f2680f24af3b5c43ba02612afb264d"
   dependencies:
     querystring ">=0.2.0"
     request ">=2.27.0"
@@ -3828,7 +3828,7 @@ request-promise@^4.1.1:
     request-promise-core "1.1.1"
     stealthy-require "^1.0.0"
 
-request@2, request@>=2.27.0, request@>=2.33.0, request@^2.55.0, request@^2.61.0, request@^2.68.0, request@^2.74.0, request@^2.78.0:
+request@2, request@>=2.33.0, request@^2.55.0, request@^2.61.0, request@^2.68.0, request@^2.74.0, request@^2.78.0:
   version "2.78.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.78.0.tgz#e1c8dec346e1c81923b24acdb337f11decabe9cc"
   dependencies:
@@ -3883,7 +3883,7 @@ request@2.9.x:
   version "2.9.203"
   resolved "https://registry.yarnpkg.com/request/-/request-2.9.203.tgz#6c1711a5407fb94a114219563e44145bcbf4723a"
 
-request@^2.79.0:
+request@>=2.27.0, request@^2.79.0:
   version "2.80.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.80.0.tgz#8cc162d76d79381cdefdd3505d76b80b60589bd0"
   dependencies:

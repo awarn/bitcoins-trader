@@ -9,7 +9,7 @@
   "author": "Sahat Yalkabov",
   "license": "MIT",
   "scripts": {
-    "start": "node app.js",
+    "start": "babel-node app.js",
     "dev": "nodemon --exec babel-node -- app.js",
     "test": "mocha --reporter spec"
   },
@@ -39,7 +39,7 @@
     "lastfm": "^0.9.2",
     "later": "^1.2.0",
     "lob": "^3.9.0",
-    "localbitcoins-api": "https://github.com/awarn/localbitcoins-api.git",
+    "localbitcoins-api": "https://github.com/awarn/localbitcoins-api",
     "lodash": "^4.16.6",
     "lusca": "^1.4.1",
     "mongoose": "^4.6.6",
