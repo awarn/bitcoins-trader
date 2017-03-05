@@ -9,12 +9,14 @@
   "author": "Sahat Yalkabov",
   "license": "MIT",
   "scripts": {
-    "start": "babel-node app.js",
-    "dev": "nodemon --exec babel-node -- app.js",
+    "start": "./node_modules/.bin/babel-node app.js",
+    "dev": "nodemon --exec ./node_modules/.bin/babel-node -- app.js",
     "test": "mocha --reporter spec"
   },
   "dependencies": {
     "async": "^2.1.2",
+    "babel": "^6.23.0",
+    "babel-cli": "^6.23.0",
     "babel-core": "^6.21.0",
     "babel-preset-stage-3": "^6.17.0",
     "bcrypt-nodejs": "^0.0.3",
