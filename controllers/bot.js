@@ -13,7 +13,7 @@ const LBCClient = require('localbitcoins-api');
 const passport = require('passport');
 const redis = require("redis");
 
-const redisClient = redis.createClient();
+const redisClient = redis.createClient(process.env.REDIS_URL);
 
 // Setup Localbitcoin client
 const lbc = new LBCClient(process.env.LOCALBITCOIN_KEY, process.env.LOCALBITCOIN_SECRET);

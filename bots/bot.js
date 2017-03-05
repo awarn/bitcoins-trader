@@ -15,7 +15,7 @@ const LBCClient = require('localbitcoins-api');
 const redis = require("redis");
 const request = require('request-promise');
 
-const client = redis.createClient();
+const client = redis.createClient(process.env.REDIS_URL);
 
 // Setup Localbitcoin client
 const lbc = new LBCClient(process.env.LOCALBITCOIN_KEY, process.env.LOCALBITCOIN_SECRET);
