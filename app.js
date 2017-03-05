@@ -25,7 +25,10 @@ const upload = multer({ dest: path.join(__dirname, 'uploads') });
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
  */
-dotenv.load({ path: '.env.example' });
+dotenv.load({ path: '.env' });
+
+const bot = require('./bots/bot');
+bot.start();
 
 /**
  * Controllers (route handlers).
@@ -34,6 +37,7 @@ const homeController = require('./controllers/home');
 const userController = require('./controllers/user');
 const apiController = require('./controllers/api');
 const contactController = require('./controllers/contact');
+const botController = require('./controllers/bot');
 
 /**
  * API keys and Passport configuration.
@@ -132,6 +136,8 @@ app.post('/account/profile', passportConfig.isAuthenticated, userController.post
 app.post('/account/password', passportConfig.isAuthenticated, userController.postUpdatePassword);
 app.post('/account/delete', passportConfig.isAuthenticated, userController.postDeleteAccount);
 app.get('/account/unlink/:provider', passportConfig.isAuthenticated, userController.getOauthUnlink);
+app.get('/bot', passportConfig.isAuthenticated, botController.index);
+app.post('/bot', passportConfig.isAuthenticated, botController.postSettings);
 
 /**
  * API examples routes.

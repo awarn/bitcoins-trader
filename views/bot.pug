@@ -1,0 +1,57 @@
+extends layout
+
+block content
+	.page-header
+		h3 Bot settings
+		p= lbcUser.username
+
+	section.row
+		.col-sm-8
+			h4 Current ads
+			table.table
+				thead
+					tr
+						th ID
+						th Equation
+						th Price
+				tbody
+					each ad in lbcUserAds
+						tr
+							td= ad.ad_id
+							td= ad.price_equation
+							td= ad.temp_price
+
+	form.form-horizontal(method='POST')
+		input(type='hidden', name='_csrf', value=_csrf)
+		.form-group
+			label(class='col-sm-2 control-label', for='run') Running?
+			.col-sm-8
+				if settings.running
+					input.form-control(type='checkbox', name='run', id='run', checked)
+				else
+					input.form-control(type='checkbox', name='run', id='run')
+		.form-group
+			label(class='col-sm-2 control-label', for='dontGoUnder') Do not go below
+			.col-sm-8
+				input.form-control(type='text', name='dontGoUnder', id='dontGoUnder', value=settings.dontGoUnder)
+		.form-group
+			label(class='col-sm-2 control-label', for='minimumMaxAmountAvailable') Minimum 'max amount available'
+			.col-sm-8
+				input.form-control(type='text', name='minimumMaxAmountAvailable', id='minimumMaxAmountAvailable', value=settings.minimumMaxAmountAvailable)
+		.form-group
+			label(class='col-sm-2 control-label', for='minTradeCount') At least these many trades
+			.col-sm-8
+				input.form-control(name='minTradeCount', id='minTradeCount', value=settings.minTradeCount)
+		.form-group
+			label(class='col-sm-2 control-label', for='minTradeCount') Payment method
+			.col-sm-8
+				input.form-control(name='paymentMethod', id='paymentMethod', value=settings.paymentMethod)
+		.form-group
+			label(class='col-sm-2 control-label', for='undercutAmount') Undercut amount
+			.col-sm-8
+				input.form-control(name='undercutAmount', id='undercutAmount', value=settings.undercutAmount)
+		.form-group
+			.col-sm-offset-2.col-sm-8
+				button.btn.btn-primary(type='submit')
+					i.fa.fa-ok
+					| Save
