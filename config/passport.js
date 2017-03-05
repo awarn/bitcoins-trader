@@ -427,28 +427,6 @@ passport.use('tumblr', new OAuthStrategy({
 ));
 
 /**
- * Foursquare API OAuth.
- */
-passport.use('foursquare', new OAuth2Strategy({
-  authorizationURL: 'https://foursquare.com/oauth2/authorize',
-  tokenURL: 'https://foursquare.com/oauth2/access_token',
-  clientID: process.env.FOURSQUARE_ID,
-  clientSecret: process.env.FOURSQUARE_SECRET,
-  callbackURL: process.env.FOURSQUARE_REDIRECT_URL,
-  passReqToCallback: true
-},
-  (req, accessToken, refreshToken, profile, done) => {
-    User.findById(req.user._id, (err, user) => {
-      if (err) { return done(err); }
-      user.tokens.push({ kind: 'foursquare', accessToken });
-      user.save((err) => {
-        done(err, user);
-      });
-    });
-  }
-));
-
-/**
  * Steam API OpenID.
  */
 passport.use(new OpenIDStrategy({
@@ -484,28 +462,6 @@ passport.use(new OpenIDStrategy({
     });
   });
 }));
-
-/**
- * Pinterest API OAuth.
- */
-passport.use('pinterest', new OAuth2Strategy({
-  authorizationURL: 'https://api.pinterest.com/oauth/',
-  tokenURL: 'https://api.pinterest.com/v1/oauth/token',
-  clientID: process.env.PINTEREST_ID,
-  clientSecret: process.env.PINTEREST_SECRET,
-  callbackURL: process.env.PINTEREST_REDIRECT_URL,
-  passReqToCallback: true
-},
-  (req, accessToken, refreshToken, profile, done) => {
-    User.findById(req.user._id, (err, user) => {
-      if (err) { return done(err); }
-      user.tokens.push({ kind: 'pinterest', accessToken });
-      user.save((err) => {
-        done(err, user);
-      });
-    });
-  }
-));
 
 /**
  * Login Required middleware.
