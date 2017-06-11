@@ -58,7 +58,6 @@ async function redisGet(key) {
 
 async function redisSet(key, value) {
 	return new Promise((resolve, reject) => {
-		console.log(value);
 		if (value) {
 			redisClient.set(key, value, function(err, reply) {
 				if (err) {

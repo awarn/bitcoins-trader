@@ -108,8 +108,25 @@ async function apiCall(method, ad_id, params) {
 }
 
 function prepareAdjustAdParams(userAdData) {
-	let params = userAdData;
-	params["details-phone_number"] = userAdData.account_details.phone_number;
+	let params = {
+		bank_name: userAdData.bank_name,
+		min_amount: userAdData.min_amount,
+		require_trusted_by_advertiser: userAdData.require_trusted_by_advertiser,
+		track_max_amount: userAdData.track_max_amount,
+		lat: userAdData.lat,
+		price_equation: userAdData.price_equation,
+		city: userAdData.city,
+		location_string: userAdData.location_string,
+		countrycode: userAdData.countrycode,
+		currency: userAdData.currency,
+		max_amount: userAdData.max_amount,
+		lon: userAdData.lon,
+		sms_verification_required: userAdData.sms_verification_required,
+		opening_hours: userAdData.opening_hours,
+		msg: userAdData.msg,
+		require_identification: userAdData.require_identification,
+		'details-phone_number': userAdData.account_details.phone_number
+	}
 	return params;
 }
 
@@ -120,7 +137,8 @@ async function checkup() {
 	try {
 		let running = await getRedis("running");
 		if (!running) {
-			return "Not running";
+			console.log("Not running");
+			return "Not running.";
 		}
 	} catch (error) {
 		throw error;
@@ -219,6 +237,7 @@ async function checkup() {
 		// Check that we have any ads left.
 		if (!(adList && adList.length)) {
 			console.log(`No competing ads passed filters.`);
+			return `No competing ads passed filters.`;
 		}
 
 		// If we are in the top three, only compete with those
@@ -264,7 +283,7 @@ async function checkup() {
 
 			// Undercut them
 			for (var i = userAdList.length - 1; i >= 0; i--) {
-				let data = userAdList[i].data
+				let data = userAdList[i].data;
 
 				console.log("Our price:", data.temp_price);
 
@@ -273,17 +292,21 @@ async function checkup() {
 				// Set our new price
 				let newPriceEquation = targetPrice - undercutAmount;
 
-				if (dontGoUnder > newPriceEquation) {
-					console.log(`Reached "don't go under" value.`);
-					params.price_equation = dontGoUnder;
+				if (newPriceEquation == data.price_equation) {
+					console.log(`Same value as earlier.`);
 				}
 				else {
-					console.log(`Adjusting ad price: ${data.temp_price} => ${targetPrice - undercutAmount} ...`);
-					params.price_equation = newPriceEquation;
+					if (dontGoUnder > newPriceEquation) {
+						console.log(`Reached "don't go under" value.`);
+						params.price_equation = dontGoUnder;
+					}
+					else {
+						console.log(`Adjusting ad price: ${data.temp_price} => ${targetPrice - undercutAmount} ...`);
+						params.price_equation = newPriceEquation;
+					}
+					let result = await updateAd(data.ad_id, params);
+					console.log(result);
 				}
-
-				let result = await updateAd(data.ad_id, params);
-				console.log(result);
 			}
 		}
 
