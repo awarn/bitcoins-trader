@@ -2587,7 +2587,7 @@ lob@^3.9.0:
 
 "localbitcoins-api@https://github.com/awarn/localbitcoins-api":
   version "0.0.3"
-  resolved "https://github.com/awarn/localbitcoins-api#801b3478c3f2680f24af3b5c43ba02612afb264d"
+  resolved "https://github.com/awarn/localbitcoins-api#c8a3f7c0f00b269b5ef669297a3aa1b3c04c3571"
   dependencies:
     querystring ">=0.2.0"
     request ">=2.27.0"
