@@ -10,10 +10,10 @@ if (!process.env.LOCALBITCOIN_SECRET) {
 }
 
 const console = require("better-console");
-const later = require('later');
-const LBCClient = require('localbitcoins-api');
+const later = require("later");
+const LBCClient = require("/Users/antonwarnhag/Code/localbitcoins-api");
 const redis = require("redis");
-const request = require('request-promise');
+const request = require("request-promise");
 
 const client = redis.createClient(process.env.REDIS_URL);
 
@@ -107,7 +107,15 @@ async function apiCall(method, ad_id, params) {
 	});
 }
 
+function prepareAdjustAdParams(userAdData) {
+	let params = userAdData;
+	params["details-phone_number"] = userAdData.account_details.phone_number;
+	return params;
+}
+
 async function checkup() {
+
+	console.log("Checkup...");
 
 	try {
 		let running = await getRedis("running");
@@ -115,7 +123,6 @@ async function checkup() {
 			return "Not running";
 		}
 	} catch (error) {
-		console.log(error);
 		throw error;
 	}
 
@@ -132,7 +139,7 @@ async function checkup() {
 		minimumMaxAmountAvailable = await getRedis("minimumMaxAmountAvailable");
 		minTradeCount = await getRedis("minTradeCount");;
 	} catch (error) {
-		console.log(error);
+		throw(error);
 	}
 
 	if (!dontGoUnder) {
@@ -161,6 +168,26 @@ async function checkup() {
 		// Get our own ad(s) id(s).
 		let userAds = await getUserAds();
 		let userAdList = userAds.ad_list;
+		if (!(userAdList && userAdList.length)) {
+			throw `User has no ads running.`;
+		}
+
+		for (var i = userAdList.length - 1; i >= 0; i--) {
+			let data = userAdList[i].data
+			console.log("Our price:", data.temp_price);
+
+			if (data.temp_price < dontGoUnder) {
+				console.log(`Current ad value (${data.temp_price}) is below 'dontGoUnder' value. Adjusting...`);
+
+				let params = prepareAdjustAdParams(data);
+				params.price_equation = dontGoUnder;
+
+				let result = await updateAd(data.ad_id, params);
+				console.log(`Adjusted ad price: ${data.temp_price} => ${dontGoUnder}`);
+			}
+		}
+
+		// Get an array of our ads ids for filtering ads further down.
 		let userAdIds = userAdList.map((ad) => {
 			return ad.data.ad_id;
 		});
@@ -168,6 +195,9 @@ async function checkup() {
 		// Get the current SEK ads.
 		let allAds = await getSellAds();
 		let adList = allAds.ad_list;
+		if (!(userAdList && userAdList.length)) {
+			throw `Could not find any ads listed on Localbitcoin website. There is likely an error with the bots connection to it.`
+		}
 
 		// Filter out our own ad.
 		adList = adList.filter((ad) => {
@@ -186,6 +216,11 @@ async function checkup() {
 			return ad.data.temp_price - undercutAmount > dontGoUnder;
 		});
 
+		// Check that we have any ads left.
+		if (!(adList && adList.length)) {
+			console.log(`No competing ads passed filters.`);
+		}
+
 		// If we are in the top three, only compete with those
 		// with a significant number of trades.
 		let inTopThree = false;
@@ -203,7 +238,6 @@ async function checkup() {
 			});
 		}
 
-		// Check that we have any ads left.
 		if (adList.length > 0) {
 
 			// Sort the remaining ads by temp_price.
@@ -226,55 +260,50 @@ async function checkup() {
 
 			// Get the lowest price of the remaining.
 			let targetPrice = adList[0].data.temp_price;
-			console.log("target price:", targetPrice);
+			console.log("Target price:", targetPrice);
 
 			// Undercut them
 			for (var i = userAdList.length - 1; i >= 0; i--) {
 				let data = userAdList[i].data
 
-				console.log("our price:", data.temp_price);
+				console.log("Our price:", data.temp_price);
 
-				let params = {
-					bank_name: data.bank_name,
-					min_amount: data.min_amount,
-					require_trusted_by_advertiser: data.require_trusted_by_advertiser,
-					track_max_amount: data.track_max_amount,
-					lat: data.lat,
-					price_equation: data.price_equation, // Changed below
-					city: data.city,
-					location_string: data.location_string,
-					countrycode: data.countrycode,
-					currency: data.currency,
-					max_amount: data.max_amount,
-					lon: data.lon,
-					sms_verification_required: data.sms_verification_required,
-					opening_hours: data.opening_hours,
-					msg: data.msg,
-					require_identification: data.require_identification,
-					'details-phone_number': data.account_details.phone_number
-				}
+				let params = prepareAdjustAdParams(data);
 
 				// Set our new price
-				params.price_equation = targetPrice - undercutAmount;
+				let newPriceEquation = targetPrice - undercutAmount;
 
-				if (dontGoUnder <= params.price_equation) {
-					let result = await updateAd(data.ad_id, params);
-					console.log(`Adjusted ad price: ${data.temp_price} => ${targetPrice - undercutAmount}`);
-				} else {
-					console.log(`Not adjusting price; will not go below ${dontGoUnder}.`);
+				if (dontGoUnder > newPriceEquation) {
+					console.log(`Reached "don't go under" value.`);
+					params.price_equation = dontGoUnder;
 				}
+				else {
+					console.log(`Adjusting ad price: ${data.temp_price} => ${targetPrice - undercutAmount} ...`);
+					params.price_equation = newPriceEquation;
+				}
+
+				let result = await updateAd(data.ad_id, params);
+				console.log(result);
 			}
 		}
 
-	} catch(e) {
-		console.log(e);
+	} catch(error) {
+		throw error;
 	}
+
+	console.log(`Checkup done.`);
 
 }
 
 function start() {
 	console.log("Bot started...");
-	checkupTimer = later.setInterval(checkup, checkupSched);
+	checkupTimer = later.setInterval(async () => {
+		try {
+			await checkup();
+		} catch (error) {
+			console.log(error);
+		}
+	}, checkupSched);
 }
 
 function stop() {
